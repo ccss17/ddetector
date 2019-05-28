@@ -1,6 +1,6 @@
 all: 
 	gcc -o abba abba.c -pthread
-	gcc -shared -fPIC -o ddetector.so ddtector.c -ldl
+	gcc -shared -fPIC -o ddetector.so ddetector.c -ldl
 	gcc -o dinning_deadlock dinning_deadlock.c -pthread
 
 
