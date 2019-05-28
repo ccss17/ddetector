@@ -1,11 +1,8 @@
-all: ddtector example
+all: 
+	gcc -o abba abba.c -pthread
+	gcc -shared -fPIC -o ddetector.so ddtector.c -ldl
+	gcc -o dinning_deadlock dinning_deadlock.c -pthread
 
-ddtector: ddtector.c
-	gcc -shared -fPIC -o ddtector.so ddtector.c -ldl
-
-example: abba.c dining_deadlock.c
-	gcc -o abba abba.c
-	gcc -o dining_deadlock dining_deadlock.c
 
 clean:
-		rm -rf ddtector example
+	rm -rf abba dinning_deadlock ddetector.so
