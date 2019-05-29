@@ -33,6 +33,7 @@ void insert_mutex(pthread_mutex_t * mutex){
     for (i=0; i<MUTEX_CT * THREAD_CT; i++) {
         if (marr[i] == NULL) {
             marr[i] = mutex;
+            /*printf("\x1b[32mINSERT MUTEX in (%d): %p\x1b[0m\n", i, mutex);*/
             break;
         }
     }
@@ -92,14 +93,15 @@ int pthread_mutex_lock (pthread_mutex_t * mutex) {
 		exit(1) ;
 
     insert_mutex(mutex);
-    show_marr(marr);
     if (check_deadlock() == 1) {
         printf("\x1b[31mDEADLOCK!!!" "\x1b[0m\n");
     }
-    puts("");
 
     result = lockp(mutex);
 	return  result; 	
+    /*printf("\x1b[32mINSERT MUTEX: %p\x1b[0m\n", mutex);*/
+    /*show_marr(marr);*/
+    /*puts("");*/
 }
 
 int pthread_mutex_unlock (pthread_mutex_t * mutex) { 
@@ -114,6 +116,8 @@ int pthread_mutex_unlock (pthread_mutex_t * mutex) {
 		exit(1) ;
 
     remove_mutex(mutex);
+    /*printf("\x1b[33mREMOVE MUTEX: %p\n\x1b[0m", mutex);*/
+    /*puts("");*/
 
     result = unlockp(mutex);
 	return result;
