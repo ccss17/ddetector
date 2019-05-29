@@ -18,29 +18,21 @@ typedef struct {
 
 chopstick_t chopstick[5] ;
 
-void
-chopstick_init(chopstick_t * c)
-{
+void chopstick_init(chopstick_t * c) {
 	c->status = avail ;
 	pthread_mutex_init(&(c->mutex), 0x0) ;
 }
 
-void
-thinking()
-{
+void thinking() {
 	usleep(rand() % 1000) ;
 }
 
-void
-eating(int phid)
-{
+void eating(int phid) {
 	printf("Philosopher %d eats.\n", phid) ;
 	usleep(rand() % 1000) ;
 }
 
-void
-pickup(int phid)
-{
+void pickup(int phid) {
 	int left = phid ;
 	int right = (phid + 1) % 5 ;
 
@@ -48,9 +40,7 @@ pickup(int phid)
 	pthread_mutex_lock(&(chopstick[right].mutex)) ;
 }
 
-void
-putdown(int phid)
-{
+void putdown(int phid) {
 	int left = phid ;
 	int right = (phid + 1) % 5 ;
 
@@ -58,9 +48,7 @@ putdown(int phid)
 	pthread_mutex_unlock(&(chopstick[left].mutex)) ;
 }
 
-void *
-philosopher(void * arg)
-{
+void * philosopher(void * arg) {
 	int phid = *((int *) arg) ;
 	int i ;
 
@@ -72,9 +60,7 @@ philosopher(void * arg)
 	}
 }
 
-int
-main () 
-{
+int main () {
 	int phids[5] = {0, 1, 2, 3, 4} ;
 	pthread_t threads[5] ;
 	int i ;

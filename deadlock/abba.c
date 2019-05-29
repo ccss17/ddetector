@@ -4,15 +4,16 @@
 #include <time.h>
 #include <unistd.h>
 
+#define DELAY 1000
+
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 
 void noise() {
-	usleep(rand() % 1000) ;
+	usleep(rand() % DELAY) ;
 }
 void * thread(void *arg) {
-    printf("pthself: %ld\n", pthread_self());
-		pthread_mutex_lock(&mutex);	 noise() ;
+		pthread_mutex_lock(&mutex);	 sleep(1);
 		pthread_mutex_lock(&mutex2); noise() ;
 		pthread_mutex_unlock(&mutex2); noise() ;
 		pthread_mutex_unlock(&mutex); noise() ;
@@ -24,9 +25,8 @@ int main(int argc, char *argv[]) {
 	srand(time(0x0)) ;
 
     pthread_create(&tid, NULL, thread, NULL);
-	/*pthread_create(&tid, NULL, thread_nodeadlock, NULL);*/
 
-	pthread_mutex_lock(&mutex2); noise() ; 
+	pthread_mutex_lock(&mutex2); sleep(1);
 	pthread_mutex_lock(&mutex);	noise() ; 
 	pthread_mutex_unlock(&mutex); noise() ;
 	pthread_mutex_unlock(&mutex2); noise() ;

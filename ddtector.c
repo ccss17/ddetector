@@ -25,7 +25,7 @@ void show_status(){
         printf("THREAD[%ld]:\n", dd_arr[i].tid);
         for (j=0; j<MUTEX_CT; j++) {
         if (dd_arr[i].mid[j] != NULL)
-            printf("\tMUTEX OF THREAD:%d\n", dd_arr[i].mid[j]);
+            printf("\tMUTEX OF THREAD:%p\n", dd_arr[i].mid[j]);
         }
     } }
 }
