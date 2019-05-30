@@ -19,12 +19,20 @@ int end_of_mutex(pthread_mutex_t * marr[]){ // UNTESTED
     return i;
 }
 
-void show_marr(pthread_mutex_t * marr[]){
+void show_marr(pthread_mutex_t * marr[], pthread_t tid){
     int i, last;
+    FILE * f;
+    f = fopen("dmonitor.trace", "a");
 
     last = end_of_mutex(marr);
+    /*printf("THREAD ID: %ld\n", tid);*/
+    fprintf(f, "%ld\n", tid);
     for (i=0; i<=last; i++)
-        if (marr[i] != NULL) printf("MUTEX: %p\n", marr[i]);
+        /*if (marr[i] != NULL) printf("\t%p\n", marr[i]);*/
+        if (marr[i] != NULL) fprintf(f, "%p\n", marr[i]);
+    fprintf(f, "\n");
+
+    fclose(f);
 }
 
 
@@ -49,9 +57,19 @@ void remove_mutex(pthread_mutex_t * mutex){
     }
 }
 
+int size_marr(){
+    int i, size;
+    for (i=0, size=0; i<MUTEX_CT * THREAD_CT; i++) 
+        if (marr[i] != NULL) size ++;
+    return size;
+}
+
 int check_deadlock(){
     int i, j, last, flag;
     pthread_mutex_t * tmp_marr[MUTEX_CT * THREAD_CT];
+
+    if (size_marr() == 2)
+        return 0;
 
     for (i=0; i<MUTEX_CT * THREAD_CT; i++) 
         tmp_marr[i] = NULL;
@@ -93,11 +111,12 @@ int pthread_mutex_lock (pthread_mutex_t * mutex) {
 		exit(1) ;
 
     insert_mutex(mutex);
-    printf("\x1b[32mINSERT MUTEX: %p\x1b[0m\n", mutex);
-    show_marr(marr);
+    /*printf("\x1b[32mINSERT MUTEX: %p\x1b[0m\n", mutex);*/
+    show_marr(marr,pthread_self());
     puts("");
     if (check_deadlock() == 1) {
         printf("\x1b[31mDEADLOCK!!!" "\x1b[0m\n");
+        /*exit(1);*/
     }
 
     result = lockp(mutex);
@@ -116,9 +135,10 @@ int pthread_mutex_unlock (pthread_mutex_t * mutex) {
 		exit(1) ;
 
     remove_mutex(mutex);
-    printf("\x1b[33mREMOVE MUTEX: %p\n\x1b[0m", mutex);
-    puts("");
+    /*printf("\x1b[33mREMOVE MUTEX: %p\n\x1b[0m", mutex);*/
+    /*puts("");*/
 
     result = unlockp(mutex);
+
 	return result;
 }

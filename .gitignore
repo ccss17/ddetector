@@ -4,3 +4,4 @@ dinning_deadlock
 *.out
 PA3/
 test.c
+*.trace
