@@ -1,21 +1,18 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <pthread.h>
-#include <time.h>
 #include <unistd.h>
-
-#define DEMONITOR_TRACE "dmonitor.trace"
-#define MUTEX_CT 100
-#define THREAD_CT 10
+#include <string.h>
+#include "dd.h"
 
 typedef struct {
     int size;
     char ** strarr;
 } splited_set;
+
+int exists(char * fname) {
+    if ( access( fname, F_OK) != -1 ) return 1;
+    else return 0;
+}
 
 char * read_file(char * filename) {
     FILE * f;
@@ -62,8 +59,13 @@ splited_set * split_str(char * content, char * delim){
     return sset;
 }
 
-int check_deadlock(splited_set * mutexes) {
+int check_deadlock_with_trace(splited_set * mutexes) {
     int i, j, last, flag;
+
+    if (mutexes->size%2 == 1 ||
+       (mutexes->size == 2 && 
+        strcmp(mutexes->strarr[0], mutexes->strarr[1] == 0)))
+        return 0;
 
     flag = 1;
     for (i=1; i<mutexes->size-1; i++) {
@@ -83,15 +85,23 @@ int check_deadlock(splited_set * mutexes) {
     return 1;
 }
 
-int main(void) {
+int main(int argc, char * argv[]) {
+    if (argc != 2) {
+        fputs("Usage ./dpredictor [dmonitor.trace PATH]\n", stderr);
+        return 1;
+    }
+    if (exists(argv[1]) == 0){
+        fprintf(stderr, "%s doesn't exists\n", argv[1]);
+        return 1;
+    }
 	char * content;
     splited_set * sections, * mutexes;
     int i;
 
-    content = read_file(DEMONITOR_TRACE);
+    content = read_file(argv[1]);
 	sections = split_str(content, "\n");
 	mutexes = split_str(sections->strarr[sections->size - 1], ",");
-    if (check_deadlock(mutexes) == 1)
+    if (check_deadlock_with_trace(mutexes) == 1)
         printf("\x1b[31mDEADLOCK DETECTED :( \x1b[0m\n");
     else
         printf("\x1b[32mNO DEADLOCK DETECTED :) \x1b[0m\n");
