@@ -12,98 +12,95 @@
 #define MUTEX_CT 100
 #define THREAD_CT 10
 
-char** str_split(char* a_str, const char a_delim) {
-    char** result    = 0;
-    size_t count     = 0;
-    char* tmp        = a_str;
-    char* last_comma = 0;
-    char delim[2];
-    delim[0] = a_delim;
-    delim[1] = 0;
+typedef struct {
+    int size;
+    char ** strarr;
+} splited_set;
 
-    /* Count how many elements will be extracted. */
-    while (*tmp) {
-        if (a_delim == *tmp) {
-            count++;
-            last_comma = tmp;
-        }
-        tmp++;
-    }
+char * read_file(char * filename) {
+    FILE * f;
+    long fsize;
+    char * content;
+    
+    f = fopen(filename, "r");
+    fseek(f, 0, SEEK_END);
+    fsize = ftell(f);
+    content = malloc(fsize + 1);
+    fseek(f, 0, SEEK_SET);
+    fread(content, 1, fsize, f);
+    fclose(f);
+    content[fsize] = '\0';
 
-    /* Add space for trailing token. */
-    count += last_comma < (a_str + strlen(a_str) - 1);
-
-    /* Add space for terminating null string so caller
-    *        knows where the list of returned strings ends. */
-    count++;
-
-    result = malloc(sizeof(char*) * count);
-
-    if (result) {
-        size_t idx  = 0;
-        char* token = strtok(a_str, delim);
-
-        while (token) {
-            assert(idx < count);
-            *(result + idx++) = strdup(token);
-            token = strtok(0, delim);
-        }
-        assert(idx == count - 1);
-        *(result + idx) = 0;
-    }
-
-    return result;
+    return content;
 }
 
+splited_set * split_str(char * content, char * delim){
+    char ** next;
+    char * tmp;
+    int BUF_SIZE = 2, i;
+    splited_set * sset ;
 
-int check_deadlock(char * section){
+    sset = (splited_set *) malloc(sizeof(splited_set));
+    sset->size = 0;
+    sset->strarr = (char**)malloc(sizeof(char*) * BUF_SIZE);
+
+	tmp = strtok(content, delim);
+	while (tmp != NULL) {
+        sset->strarr[sset->size] = tmp;
+        tmp = strtok(NULL, delim);
+        sset->size++;
+        if (sset->size >= BUF_SIZE){
+            BUF_SIZE *= 2;
+            next = (char**)malloc(sizeof(char*) * BUF_SIZE);
+            for (i=0; i<BUF_SIZE/2; i++)
+                next[i] = sset->strarr[i];
+            free(sset->strarr);
+            sset->strarr = next;
+        }
+    }
+
+    return sset;
+}
+
+int check_deadlock(splited_set * mutexes) {
     int i, j, last, flag;
 
     flag = 1;
-    for (i=0; i<MUTEX_CT * THREAD_CT; i++) {
-        if (section[i] != NULL) {
-            for (j = i+1; j<MUTEX_CT * THREAD_CT; j++) {
-                if (strcmp(section[i], section[j]) == 0) {
-                    section[i] = section[j] = NULL;
-                    flag = 0;
-                    break;
-                }
-                flag = 1;
-            }
+    for (i=1; i<mutexes->size-1; i++) {
+    if (mutexes->strarr[i] != NULL) {
+        for (j = i+1; j<mutexes->size; j++) {
+        if (mutexes->strarr[j] != NULL &&
+            strcmp(mutexes->strarr[i], mutexes->strarr[j]) == 0) {
+                mutexes->strarr[i] = mutexes->strarr[j] = NULL;
+                flag = 0;
+                break;
         }
-        if (flag == 1) return 0;
+        flag = 1;
+        }
+    }
+    if (flag == 1) return 0;
     }
     return 1;
 }
 
-
 int main(void) {
-    FILE * f;
-    size_t sz;
-    char ** result;
-    char * content = "awefawefaw\n"
-        "awefawefawef\n"
-        "\n"
-        "bbbbbbbbbbbbbbbbb\n"
-        "zzzzzzzzzzzzzzzzz\n"
-        "\n";
-    char * test = "123123:99999";
+	char * content;
+    splited_set * sections, * mutexes;
+    int i;
 
-    f = fopen(DEMONITOR_TRACE, "r");
-    fseek(f, 0L, SEEK_END);
-    sz = ftell(f);
-    /*printf("size: %ld\n", sz);*/
-    /*result = str_split(content, "\n");*/
-    result = str_split(test, ':');
-    puts("#");
-    printf("%s\n", *(result));
-    puts("#");
-    /*printf("%s\n", *(result+1));*/
-    puts("#");
-    
-    /*last_section = str_split(last , "\n");*/
+    content = read_file(DEMONITOR_TRACE);
+	sections = split_str(content, "\n");
+	mutexes = split_str(sections->strarr[sections->size - 1], ",");
+    if (check_deadlock(mutexes) == 1)
+        printf("\x1b[31mDEADLOCK DETECTED :( \x1b[0m\n");
+    else
+        printf("\x1b[32mNO DEADLOCK DETECTED :) \x1b[0m\n");
 
-    fclose(f);
+    free(sections->strarr);
+    free(mutexes->strarr);
+    free(sections);
+    free(mutexes);
+    free(content);
 
     return 0;
 }

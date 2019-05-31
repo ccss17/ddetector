@@ -26,10 +26,10 @@ void show_marr(pthread_mutex_t * marr[], pthread_t tid){
 
     last = end_of_mutex(marr);
     /*printf("THREAD ID: %ld\n", tid);*/
-    fprintf(f, "%ld\n", tid);
+    fprintf(f, "%ld,", tid);
     for (i=0; i<=last; i++)
         /*if (marr[i] != NULL) printf("\t%p\n", marr[i]);*/
-        if (marr[i] != NULL) fprintf(f, "%p\n", marr[i]);
+        if (marr[i] != NULL) fprintf(f, "%p,", marr[i]);
     fprintf(f, "\n");
 
     fclose(f);

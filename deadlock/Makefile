@@ -1,18 +1,16 @@
 override CFLAGS += -pthread -g -ggdb
 CC = gcc
+OUT = build
 
 all: deadlock
 	
 deadlock: abba.c dinning_deadlock.c cabbac.c single_thread_cycle.c thread_creation.c
-	$(CC) thread_creation.c -o thread_creation $(CFLAGS) 
-	$(CC) abba.c -o abba $(CFLAGS) 
-	$(CC) single_thread_cycle.c -o single_thread_cycle $(CFLAGS) 
-	$(CC) cabbac.c -o cabbac $(CFLAGS) 
-	$(CC) dinning_deadlock.c -o dinning_deadlock $(CFLAGS) 
+	if ! test -d build; then mkdir build; fi
+	$(CC) thread_creation.c -o $(OUT)/thread_creation $(CFLAGS) 
+	$(CC) abba.c -o $(OUT)/abba $(CFLAGS) 
+	$(CC) single_thread_cycle.c -o $(OUT)/single_thread_cycle $(CFLAGS) 
+	$(CC) cabbac.c -o $(OUT)/cabbac $(CFLAGS) 
+	$(CC) dinning_deadlock.c -o $(OUT)/dinning_deadlock $(CFLAGS) 
 
 clean:
-	if test -f single_thread_cycle; then rm single_thread_cycle; fi
-	if test -f abba; then rm abba; fi
-	if test -f thread_creation; then rm thread_creation; fi
-	if test -f cabbac; then rm cabbac; fi
-	if test -f dinning_deadlock; then rm dinning_deadlock; fi
+	if test -d build; then rm build/*; rmdir build; fi

@@ -5,3 +5,5 @@ dinning_deadlock
 PA3/
 test.c
 *.trace
+build/
+deadlock/build/
