@@ -62,7 +62,7 @@ splited_set * split_str(char * content, char * delim){
 int check_deadlock_with_trace(splited_set * mutexes) {
     int i, j, last, flag;
 
-    if (mutexes->size%2 == 1 ||
+    if (mutexes->size%2 == 0 ||
        (mutexes->size == 2 && 
         strcmp(mutexes->strarr[0], mutexes->strarr[1] == 0)))
         return 0;
